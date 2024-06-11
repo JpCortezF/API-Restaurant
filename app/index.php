@@ -5,6 +5,8 @@ ini_set('display_errors', 1);
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Slim\Psr7\Response as ResponseClass;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use Slim\Routing\RouteContext;
@@ -15,6 +17,9 @@ require './Controller/EmpleadoController.php';
 require './Controller/ProductoController.php';
 require './Controller/MesaController.php';
 require './Controller/PedidoController.php';
+require './Middleware/AuthEmpleados.php';
+require './Middleware/AuthProductos.php';
+require './Middleware/AuthMiddleware.php';
 require_once './DataBase/AccesoDatos.php';
 
 // Load ENV
@@ -32,18 +37,22 @@ $app->addBodyParsingMiddleware();
 $app->group('/empleados', function (RouteCollectorProxy $group) {
     $group->get('[/]', \EmpleadoController::class . ':TraerTodos');
     $group->get('/{nombre}', \EmpleadoController::class . ':TraerUno');
-    $group->post('[/]', \EmpleadoController::class . ':GuardarUno');
-    $group->put('[/]', \EmpleadoController::class . ':ModificarUno');
+    $group->post('[/]', \EmpleadoController::class . ':GuardarUno')
+        ->add(\AuthEmpleados::class . ':ValidarCampos');
+    $group->put('[/]', \EmpleadoController::class . ':ModificarUno')
+        ->add(\AuthEmpleados::class . ':ValidarCampos');
     $group->delete('[/]', \EmpleadoController::class . ':BorrarUno');
-});
+})->add(new AuthMiddleware("empleado"));
 
 $app->group('/productos', function (RouteCollectorProxy $group) {
     $group->get('[/]', \ProductoController::class . ':TraerTodos');
     $group->get('/{id_producto}', \ProductoController::class . ':TraerUno');
     $group->post('[/]', \ProductoController::class . ':GuardarUno');
-    // $group->put('[/]', \ProductoController::class . ':ModificarUno');
-    // $group->delete('[/]', \ProductoController::class . ':BorrarUno');
-});
+    $group->put('[/]', \ProductoController::class . ':ModificarUno')
+        ->add(\AuthProductos::class . ':ValidarRol');
+    $group->delete('[/]', \ProductoController::class . ':BorrarUno')
+        ->add(\AuthProductos::class . ':ValidarRol');
+})->add(new AuthMiddleware("producto"));
 
 $app->group('/pedidos', function (RouteCollectorProxy $group) {
     $group->get('[/]', \PedidoController::class . ':TraerTodos');

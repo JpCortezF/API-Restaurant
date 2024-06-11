@@ -3,6 +3,28 @@ require './Model/Producto.php';
 
 class ProductoController
 {
+
+    public function GuardarUno($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+        $producto = new Producto();
+
+        $producto->id_pedido = $parametros['id_pedido'];
+        $producto->descripcion = $parametros['descripcion'];
+        $producto->precio = $parametros['precio'];
+        $producto->id_sector = $parametros['id_sector'];
+        $producto->id_empleado = $parametros['id_empleado'];
+        $producto->tiempo_producto = $parametros['tiempo_producto'];
+        error_log(print_r($parametros, true));
+        error_log(print_r($producto, true));
+        $producto->NuevoProducto();
+
+        $payload = json_encode(array("mensaje" => "Producto creado con exito"));
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
     public function TraerUno($request, $response, $args)
     {
         try {
@@ -26,20 +48,39 @@ class ProductoController
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function GuardarUno($request, $response, $args)
+    public function ModificarUno($request, $response, $args)
+    {
+        $params = $request->getParsedBody();
+        $producto = Producto::ObtenerProducto($params['id_producto']);
+        if ($producto && isset($params['descripcion'], $params['precio'], $params['id_sector'], $params['id_empleado'], $params['estado'], $params['tiempo_producto'])) {
+            $producto->descripcion = $params['descripcion'];
+            $producto->precio = $params['precio'];
+            $producto->id_sector = $params['id_sector'];
+            $producto->id_empleado = $params['id_empleado'];
+            $producto->estado = $params['estado'];
+            $producto->tiempo_producto = $params['tiempo_producto'];
+
+            Producto::ModificarProducto($producto);
+            $payload = json_encode(array("mensaje" => "Producto modificado con éxito"));
+        } else {
+            $payload = json_encode(array("error" => "Datos del producto incompletos"));
+        }
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function BorrarUno($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
+        if (!isset($parametros['id_producto'])) {
+            $payload = json_encode(array("error" => "id_producto no proporcionado"));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        }
+        $id_producto = $parametros['id_producto'];
+        Producto::BorrarProducto($id_producto);
 
-        $id_pedido = $parametros['id_pedido'];
-        $descripcion = $parametros['descripcion'];
-        $id_sector = $parametros['id_sector'];
-        $id_empleado = $parametros['id_empleado'];
-        $producto = new Producto($id_pedido, $descripcion, $id_sector, $id_empleado);
-        error_log(print_r($parametros, true));
-        error_log(print_r($producto, true));
-        $producto->NuevoProducto();
-
-        $payload = json_encode(array("mensaje" => "Producto creado con exito"));
+        $payload = json_encode(array("mensaje" => "Producto borrado con exito"));
 
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');

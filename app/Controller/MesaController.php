@@ -6,11 +6,9 @@ class MesaController
 
     public function GuardarUno($request, $response, $args)
     {
-        $parametros = $request->getParsedBody();
-
-        $codigo = $parametros['codigo'];
+        // $parametros = $request->getParsedBody();
         $mesa = new Mesa();
-        $mesa->codigo = $codigo;
+        $mesa->codigo = Mesa::CodigoAlphaNumerico();
         $mesa->NuevaMesa();
 
         $payload = json_encode(array("mensaje" => "Mesa creada con exito"));

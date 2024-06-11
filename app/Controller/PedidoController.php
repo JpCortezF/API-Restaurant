@@ -9,10 +9,9 @@ class PedidoController
         $parametros = $request->getParsedBody();
 
         $pedido = new Pedido();
-        $pedido->codigo = $parametros['codigo'];
+        $pedido->codigo = Pedido::CodigoAlphaNumerico();
         $pedido->nombre_cliente = $parametros['nombre_cliente'];
         $pedido->id_mesa = $parametros['id_mesa'];
-        $pedido->tiempo_estimado = $parametros['tiempo_estimado'];
         $pedido->NuevoPedido();
 
         $payload = json_encode(array("mensaje" => "Pedido creado con exito"));

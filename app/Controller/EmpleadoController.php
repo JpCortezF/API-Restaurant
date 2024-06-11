@@ -33,11 +33,13 @@ class EmpleadoController implements IApiUsable
         $parametros = $request->getParsedBody();
 
         $nombre = $parametros['nombre'];
+        $clave = $parametros['clave'];
         $id_rol = $parametros['id_rol'];
 
         // Creamos el Empleado
         $empleado = new Empleado();
         $empleado->nombre = $nombre;
+        $empleado->clave = $clave;
         $empleado->id_rol = $id_rol;
         $empleado->NuevoEmpleado();
 
