@@ -3,19 +3,21 @@ class Empleado
 {
     public $id_empleado;
     public $nombre;
+    public $usuario;
     public $clave;
     public $id_rol;
     public $estado;
+    public $fecha_baja;
 
     public function NuevoEmpleado()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO empleados (nombre, clave, id_rol, estado) VALUES (:nombre, :clave, :id_rol, :estado)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO empleados (nombre, usuario, clave, id_rol) VALUES (:nombre, :usuario, :clave, :id_rol)");
         $claveHash = password_hash($this->clave, PASSWORD_DEFAULT);
         $consulta->bindValue(':nombre', $this->nombre, PDO::PARAM_STR);
+        $consulta->bindValue(':usuario', $this->usuario, PDO::PARAM_STR);
         $consulta->bindValue(':clave', $claveHash);
         $consulta->bindValue(':id_rol', $this->id_rol, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', 'activo', PDO::PARAM_STR);
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -25,7 +27,7 @@ class Empleado
     {
         try {
             $objAccesoDatos = AccesoDatos::obtenerInstancia();
-            $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_empleado, e.nombre, e.clave, r.nombre AS rol, e.estado, e.fecha_baja
+            $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_empleado, e.nombre, e.usuario, e.clave, e.id_rol, r.nombre AS rol, e.estado, e.fecha_baja
                 FROM empleados e
                 INNER JOIN roles r ON e.id_rol = r.id_rol");
             $consulta->execute();
@@ -36,28 +38,23 @@ class Empleado
         }
     }
 
-    public static function TraerEmpleado($nombre)
+    public static function TraerEmpleadoPorUsuario($usuario)
     {
-        try {
-            $objAccesoDatos = AccesoDatos::obtenerInstancia();
-            $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_empleado, e.nombre, e.clave, r.nombre AS rol, e.estado, e.fecha_baja
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_empleado, e.nombre, e.usuario, e.clave, e.id_rol, r.nombre AS rol, e.estado, e.fecha_baja
             FROM empleados e
             INNER JOIN roles r ON e.id_rol = r.id_rol
-            WHERE e.nombre = :nombre");
-            $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
-            $consulta->execute();
-            $empleado = $consulta->fetch(PDO::FETCH_ASSOC);
-            return $empleado;
-        } catch (Exception $e) {
-            throw new Exception("Error al traer empleado: " . $e->getMessage());
-        }
+            WHERE e.usuario = :usuario");
+        $consulta->bindValue(':usuario', $usuario, PDO::PARAM_STR);
+        $consulta->execute();
+
+        return $consulta->fetch(PDO::FETCH_ASSOC);
     }
 
     public static function EmpleadoPorID($id_empleado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id_empleado, nombre, id_rol
-        FROM empleados WHERE id_empleado = :id_empleado");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM empleados WHERE id_empleado = :id_empleado");
         $consulta->bindValue(':id_empleado', $id_empleado, PDO::PARAM_INT);
         $consulta->execute();
 
@@ -67,10 +64,12 @@ class Empleado
     public static function ModificarEmpleado($empleado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("UPDATE empleados SET nombre = :nombre, clave = :clave, id_rol = :id_rol WHERE id_empleado = :id_empleado");
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE empleados SET nombre = :nombre, usuario = :usuario, clave = :clave, id_rol = :id_rol WHERE id_empleado = :id_empleado");
+        $claveHash = password_hash($empleado->clave, PASSWORD_DEFAULT);
         $consulta->bindValue(':id_empleado', $empleado->id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':nombre', $empleado->nombre, PDO::PARAM_STR);
-        $consulta->bindValue(':clave', $empleado->clave, PDO::PARAM_STR);
+        $consulta->bindValue(':usuario', $empleado->usuario, PDO::PARAM_STR);
+        $consulta->bindValue(':clave', $claveHash, PDO::PARAM_STR);
         $consulta->bindValue(':id_rol', $empleado->id_rol, PDO::PARAM_STR);
 
         $consulta->execute();
@@ -79,10 +78,35 @@ class Empleado
     public static function BorrarEmpleado($id_empleado)
     {
         $objAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDato->prepararConsulta("UPDATE empleados SET estado = inactivo, fecha_baja = :fecha_baja WHERE id_empleado = :id_empleado");
+        $consulta = $objAccesoDato->prepararConsulta("UPDATE empleados SET estado = '0', fecha_baja = :fecha_baja WHERE id_empleado = :id_empleado");
         $fecha = new DateTime(date("d-m-Y"));
         $consulta->bindValue(':id_empleado', $id_empleado, PDO::PARAM_INT);
         $consulta->bindValue(':fecha_baja', date_format($fecha, 'Y-m-d H:i:s'));
         $consulta->execute();
+    }
+
+    public static function UsuarioLogin($usuario, $clave)
+    {
+        $objetoAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objetoAccesoDato->prepararConsulta("SELECT * FROM empleados WHERE usuario = :usuario AND estado = 1");
+        $consulta->bindValue(1, $usuario, PDO::PARAM_STR);
+        $consulta->execute();
+        $empleado = $consulta->fetchObject();
+        if ($empleado && password_verify($clave, $empleado->clave)) {
+            return $empleado;
+        }
+
+        return null;
+    }
+
+    public static function EsMozo($id_empleadoMozo)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id_empleado, usuario, nombre, id_rol
+        FROM empleados WHERE id_empleado = :id_empleado AND id_rol = 1");
+        $consulta->bindValue(':id_empleado', $id_empleadoMozo, PDO::PARAM_INT);
+        $consulta->execute();
+
+        return $consulta->fetchObject('Empleado');
     }
 }

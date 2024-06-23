@@ -1,7 +1,7 @@
 <?php
 require './Model/Producto.php';
 
-class ProductoController
+class ProductoController implements IApiUsable
 {
 
     public function GuardarUno($request, $response, $args)
@@ -9,12 +9,9 @@ class ProductoController
         $parametros = $request->getParsedBody();
         $producto = new Producto();
 
-        $producto->id_pedido = $parametros['id_pedido'];
         $producto->descripcion = $parametros['descripcion'];
         $producto->precio = $parametros['precio'];
         $producto->id_sector = $parametros['id_sector'];
-        $producto->id_empleado = $parametros['id_empleado'];
-        $producto->tiempo_producto = $parametros['tiempo_producto'];
         error_log(print_r($parametros, true));
         error_log(print_r($producto, true));
         $producto->NuevoProducto();
@@ -52,13 +49,11 @@ class ProductoController
     {
         $params = $request->getParsedBody();
         $producto = Producto::ObtenerProducto($params['id_producto']);
-        if ($producto && isset($params['descripcion'], $params['precio'], $params['id_sector'], $params['id_empleado'], $params['estado'], $params['tiempo_producto'])) {
+        if ($producto && isset($params['descripcion'], $params['precio'], $params['id_sector'], $params['estado'])) {
             $producto->descripcion = $params['descripcion'];
             $producto->precio = $params['precio'];
             $producto->id_sector = $params['id_sector'];
-            $producto->id_empleado = $params['id_empleado'];
             $producto->estado = $params['estado'];
-            $producto->tiempo_producto = $params['tiempo_producto'];
 
             Producto::ModificarProducto($producto);
             $payload = json_encode(array("mensaje" => "Producto modificado con éxito"));

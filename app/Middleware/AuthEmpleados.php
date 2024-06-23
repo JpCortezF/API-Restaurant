@@ -10,8 +10,8 @@ class AuthEmpleados
     {
         $params = $request->getParsedBody();
 
-        if ((isset($params['nombre'], $params['clave'], $params['id_rol'])) &&
-            !empty($params['nombre']) && !empty($params['clave']) && !empty($params['id_rol'])
+        if ((isset($params['nombre'], $params['usuario'], $params['clave'], $params['id_rol'])) &&
+            !empty($params['nombre']) && !empty($params['usuario']) && !empty($params['clave']) && !empty($params['id_rol'])
         ) {
             $response = $requestHandler->handle($request);
         } else {

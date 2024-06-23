@@ -1,0 +1,133 @@
+{
+	"info": {
+		"_postman_id": "76f3ccf1-7fcc-4e95-b91a-01c1c9b98f86",
+		"name": "Tp-Comanda",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33321682"
+	},
+	"item": [
+		{
+			"name": "Empleados",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Productos",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "PPedido",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTg3MjI0MzksImV4cCI6MTcxODc4MjQzOSwiYXVkIjoiMzk5ZjM2Y2EyYWQxZTk3YjM1YWJhZjhkNjhmOTkxOGZmZjZlMzMxYiIsImRhdGEiOnsiaWRfZW1wbGVhZG8iOjEwLCJpZF9yb2wiOjV9LCJhcHAiOiJMYUNvbWFuZGEifQ.1KJod_YqFVa-b3V4mRCry9RdPWmwTg5moqin-osSngE",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_empleado",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "id_producto",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "id",
+							"value": "3",
+							"type": "text"
+						},
+						{
+							"key": "estado",
+							"value": "En Preparacion",
+							"type": "text"
+						},
+						{
+							"key": "tiempo_estimado",
+							"value": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:666/productopedidos/realizar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"productopedidos",
+						"realizar"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pedidos",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Mesas",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "CSV",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Encuesta",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

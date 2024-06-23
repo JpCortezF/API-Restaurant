@@ -12,7 +12,6 @@ class AuthProductos
         $id_empleado = $params['id_empleado'];
         $id_producto = $params['id_producto'];
 
-        // Obtener empleado y producto de la base de datos
         $empleado = Empleado::EmpleadoPorID($id_empleado);
         $producto = Producto::ObtenerProducto($id_producto);
 

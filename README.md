@@ -12,8 +12,8 @@ Proyecto de PHP + Slim Framework con lo justo y necesario para funcionar
 
 # Crear archivo .env
 
-``MYSQL_HOST=''``
-``MYSQL_DB=''``
-``MYSQL_USER=''``
-``MYSQL_PASS=''``
-``MYSQL_PORT=''``
+``MYSQL_HOST=''``</br>
+``MYSQL_DB=''``</br>
+``MYSQL_USER=''``</br>
+``MYSQL_PASS=''``</br>
+``MYSQL_PORT=''``</br>

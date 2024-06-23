@@ -19,15 +19,15 @@ class AuthMiddleware
         $response = new ResponseMw();
         $params = $request->getQueryParams();
 
-        if (isset($params["credencial"])) {
-            $credenciales = $params["credencial"];
-            if ($credenciales === $this->rol) {
+        if (isset($params["rol"])) {
+            $rolIngresado = $params["rol"];
+            if ($rolIngresado === $this->rol) {
                 $response = $requestHandler->handle($request);
             } else {
                 $response->getBody()->write(json_encode(array("error" => "No sos " . $this->rol)));
             }
         } else {
-            $response->getBody()->write(json_encode(array("error" => "No envio credenciales")));
+            $response->getBody()->write(json_encode(array("error" => "No envio rol")));
         }
 
         return $response;
