@@ -133,7 +133,7 @@ class EmpleadoController implements IApiUsable
         }
 
         fclose($archivo);
-        $retorno = json_encode(array("mensaje" => "Empleados guardados en CSV con éxito"));
+        $retorno = json_encode(array("mensaje" => "Empleados guardados en CSV con exito"));
 
         $response->getBody()->write($retorno);
         return $response;

@@ -1,0 +1,5 @@
+id_producto,descripcion,precio,id_sector,estado
+4,Daikiri,1500,1,1
+3,Corona,1200,2,1
+1,"Milanesa a caballo",6000,3,1
+2,"Hamburguesa de Gargbanzo",4500,3,1

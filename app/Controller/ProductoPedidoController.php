@@ -114,30 +114,24 @@ class ProductoPedidoController
     public function EmpleadoTomaProducto($request, $response, $args)
     {
         $params = $request->getParsedBody();
-
         $id = $params['id'];
         $estado = $params['estado'];
         $tiempo_estimado = $params['tiempo_estimado'];
-        $id_empleado = $params['id_empleado'];
 
-        if (ProductoPedido::ActualizarEstadoYTiempo($id, $estado, $tiempo_estimado)) {
-            ProductoPedido::SetEmpleadoProducto($id, $id_empleado);
-            $productopedido = ProductoPedido::TraerPorId($id);
-            if ($productopedido === false) {
-                $payload = json_encode(array("error" => "No se pudo encontrar el producto pedido."));
-            } else {
-                $payload = json_encode(array("message" => "Producto pedido actualizado.", "productopedido" => $productopedido));
+        $productopedido = ProductoPedido::TraerPorId($id);
 
-                Pedido::ActualizarEstadoPedido($productopedido->id_pedido, 'En Preparacion');
-
-                $payload = json_encode(array("mensaje" => "Se han modificado el Estado y el Tiempo Estimado del Producto"));
-            }
+        if ($productopedido === false) {
+            $payload = json_encode(array("error" => "No se pudo encontrar el producto pedido."));
         } else {
-            $payload = json_encode(array("mensaje" => "No se modifico nada"));
+            if (ProductoPedido::ActualizarEstadoYTiempo($id, $estado, $tiempo_estimado)) {
+                Pedido::ActualizarEstadoPedido($productopedido->id_pedido, 'En Preparacion');
+                $payload = json_encode(array("mensaje" => "Se han modificado el Estado y el Tiempo Estimado del Producto"));
+            } else {
+                $payload = json_encode(array("mensaje" => "No se modifico nada"));
+            }
         }
 
         $response->getBody()->write($payload);
-
         return $response->withHeader('Content-Type', 'application/json');
     }
 

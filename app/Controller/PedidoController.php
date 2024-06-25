@@ -19,7 +19,8 @@ class PedidoController implements IApiUsable
         $pedido->id_mesa = $parametros['id_mesa'];
         $pedido->estado = 'Pendiente';
         $pedido->tiempo_estimado = $parametros['tiempo_estimado'];
-        if (Mesa::TraerMesa($pedido->id_mesa)) {
+        $mesa = Mesa::TraerMesa($pedido->id_mesa);
+        if ($mesa && $mesa['estado'] == 'Sin clientes') {
             if (Empleado::EsMozo($pedido->id_mozo)) {
 
                 if (isset($_FILES['foto_mesa']) && $_FILES['foto_mesa'] != null) {
@@ -190,6 +191,27 @@ class PedidoController implements IApiUsable
             $payload = json_encode(array("error" => "No se encontró el pedido"));
         }
 
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function PromedioIngresos30Dias($request, $response, $args)
+    {
+        $fecha_actual = date("Y-m-d H:i:s");
+        $fecha_actualObj = new DateTime($fecha_actual);
+        $fecha_limite = $fecha_actualObj->modify('-30 days');
+        $pedidos = Pedido::ObtenerTodosFinalizados("Finalizado");
+        $acumulador = 0;
+        foreach ($pedidos as $pedido) {
+            $fecha_cierre = new DateTime($pedido->fecha_cierre);
+            if ($fecha_cierre >= $fecha_limite) {
+                $acumulador += $pedido->ObtenerPrecioFinal($pedido->id_pedido);
+            }
+        }
+        $promedio = $acumulador / 30;
+
+
+        $payload = json_encode(array("mensaje" => "El importe promedio en los ultimos 30 dias fue de: " . $promedio));
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }

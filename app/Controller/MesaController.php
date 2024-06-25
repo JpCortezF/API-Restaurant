@@ -98,8 +98,8 @@ class MesaController implements IApiUsable
         $id_mesa = $parametros['id_mesa'];
         $mesa = Mesa::TraerMesa($id_mesa);
         if ($mesa) {
-            $mesa->estado = "Sin clientes";
-            Mesa::ActualizarEstadoMesa($id_mesa, $mesa->estado);
+            // $mesa->estado = "Sin clientes";
+            Mesa::ActualizarEstadoMesa($id_mesa, "Sin clientes");
             $payload = json_encode(array("mensaje" => "Mesa cerrada con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Error en cerrar Mesa"));

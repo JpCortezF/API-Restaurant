@@ -1,7 +1,7 @@
 <?php
 class Pedido
 {
-    public $id;
+    public $id_pedido;
     public $codigo;
     public $id_mozo;
     public $nombre_cliente;
@@ -9,13 +9,15 @@ class Pedido
     public $estado;
     public $tiempo_estimado;
     public $foto_mesa;
+    public $fecha_inicio;
+    public $fecha_cierre;
 
     public function NuevoPedido()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO pedidos (id_mozo,codigo,nombre_cliente,id_mesa,estado,tiempo_estimado,foto_mesa)
-        VALUES (:id_mozo,:codigo,:nombre_cliente,:id_mesa,:estado,:tiempo_estimado,:foto_mesa)");
-
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO pedidos (id_mozo,codigo,nombre_cliente,id_mesa,estado,tiempo_estimado,foto_mesa,fecha_inicio,fecha_cierre)
+        VALUES (:id_mozo,:codigo,:nombre_cliente,:id_mesa,:estado,:tiempo_estimado,:foto_mesa,:fecha_inicio,:fecha_cierre)");
+        $fecha = new DateTime(date('Y-m-d H:i:s'));
         $consulta->bindValue(':id_mozo', $this->id_mozo, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
         $consulta->bindValue(':nombre_cliente', $this->nombre_cliente, PDO::PARAM_STR);
@@ -23,6 +25,9 @@ class Pedido
         $consulta->bindValue(':estado', "Pendiente", PDO::PARAM_STR);
         $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_INT);
         $consulta->bindValue(':foto_mesa', $this->foto_mesa, PDO::PARAM_STR);
+        $consulta->bindValue(':fecha_inicio', date_format($fecha, 'Y-m-d H:i:s'), PDO::PARAM_STR);
+        $consulta->bindValue(':fecha_cierre', null, PDO::PARAM_STR);
+
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -58,6 +63,14 @@ class Pedido
         } catch (Exception $e) {
             throw new Exception("Error al traer el pedido: " . $e->getMessage());
         }
+    }
+    public static function ObtenerTodosFinalizados($estado)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM pedidos WHERE estado = :estado");
+        $consulta->bindValue(':estado', $estado, PDO::PARAM_STR);
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
     }
 
     public static function EliminarPedido($id_pedido)
@@ -98,10 +111,24 @@ class Pedido
     public static function ActualizarEstadoPedido($id_pedido, $estado)
     {
         $objetoAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objetoAccesoDato->prepararConsulta("UPDATE pedidos SET estado = :estado WHERE id_pedido = :id_pedido");
+
+        $sql = "UPDATE pedidos SET estado = :estado";
+
+        if ($estado === "Finalizado") {
+            $sql .= ", fecha_cierre = :fecha_cierre";
+        }
+
+        $sql .= " WHERE id_pedido = :id_pedido";
+        $consulta = $objetoAccesoDato->prepararConsulta($sql);
 
         $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
         $consulta->bindValue(':estado', $estado, PDO::PARAM_STR);
+
+        if ($estado === "Finalizado") {
+            $fecha_cierre = new DateTime(date('Y-m-d H:i:s'));
+            $consulta->bindValue(':fecha_cierre', date_format($fecha_cierre, 'Y-m-d H:i:s'), PDO::PARAM_STR);
+        }
+
         return $consulta->execute();
     }
 

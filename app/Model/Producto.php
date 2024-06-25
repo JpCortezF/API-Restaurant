@@ -26,7 +26,7 @@ class Producto
     {
         try {
             $objAccesoDatos = AccesoDatos::obtenerInstancia();
-            $consulta = $objAccesoDatos->prepararConsulta("SELECT p.id_producto, p.descripcion, p.precio, s.sector, p.estado
+            $consulta = $objAccesoDatos->prepararConsulta("SELECT p.id_producto, p.descripcion, p.precio, p.id_sector, s.sector, p.estado
             FROM productos p
             INNER JOIN sectores s ON p.id_sector = s.id_sector
             WHERE p.estado = 1 ");
@@ -34,7 +34,7 @@ class Producto
             $productos = $consulta->fetchAll(PDO::FETCH_OBJ);
             return $productos;
         } catch (Exception $e) {
-            throw new Exception("Error al traer empleados: " . $e->getMessage());
+            throw new Exception("Error al traer productos: " . $e->getMessage());
         }
     }
 

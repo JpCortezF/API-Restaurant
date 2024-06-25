@@ -6,17 +6,23 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
 class AuthProductos
 {
-    public static function ValidarRol(Request $request, RequestHandler $requestHandler)
+    public static function ValidarRol(Request $request, RequestHandler $handler)
     {
-        $params = $request->getParsedBody();
-        $id_empleado = $params['id_empleado'];
-        $id_producto = $params['id_producto'];
+        $empleado = $request->getAttribute('empleado');
 
-        $empleado = Empleado::EmpleadoPorID($id_empleado);
+        if ($empleado === null) {
+            $response = new ResponseClass();
+            $response->getBody()->write(json_encode(array("error" => "Empleado no autenticado")));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+        $params = $request->getParsedBody();
+        $id_producto = $params['id_producto'];
+        $id = $params['id'];
         $producto = Producto::ObtenerProducto($id_producto);
 
-        if ($empleado && $producto && self::EsEmpleadoAutorizado($empleado, $producto)) {
-            $response = $requestHandler->handle($request);
+        if ($producto && self::EsEmpleadoAutorizado($empleado, $producto)) {
+            $response = $handler->handle($request);
+            ProductoPedido::SetEmpleadoProducto($id, $empleado->id_empleado);
         } else {
             $response = new ResponseClass();
             $response->getBody()->write(json_encode(array("error" => "Empleado no autorizado para modificar/borrar este producto")));
@@ -31,10 +37,10 @@ class AuthProductos
         $sectorEmpleado = $empleado->id_rol;
 
         $sectoresPermitidos = [
-            1 => [2],           // Barra de tragos y vinos => Bartender
-            2 => [3],           // Barra de choperas => Cervecero
-            3 => [4],           // Cocina => Cocinero
-            4 => [4],           // Candy Bar => Cocinero
+            1 => [2], // Barra de tragos y vinos => Bartender
+            2 => [3], // Barra de choperas => Cervecero
+            3 => [4], // Cocina => Cocinero
+            4 => [4], // Candy Bar => Cocinero
         ];
 
         return isset($sectoresPermitidos[$sectorProducto]) && in_array($sectorEmpleado, $sectoresPermitidos[$sectorProducto]);

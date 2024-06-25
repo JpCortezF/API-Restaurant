@@ -57,8 +57,10 @@ $app->group('/productos', function (RouteCollectorProxy $group) {
     $group->get('[/]', \ProductoController::class . ':TraerTodos');
     $group->get('/{id_producto}', \ProductoController::class . ':TraerUno');
     $group->post('[/]', \ProductoController::class . ':GuardarUno');
-    $group->put('[/]', \ProductoController::class . ':ModificarUno')->add(\AuthProductos::class . ':ValidarRol');
-    $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(\AuthProductos::class . ':ValidarRol');
+    $group->put('[/]', \ProductoController::class . ':ModificarUno')->add(\AuthProductos::class . ':ValidarRol')
+        ->add(new LoggerMW());
+    $group->delete('[/]', \ProductoController::class . ':BorrarUno')->add(\AuthProductos::class . ':ValidarRol')
+        ->add(new LoggerMW());
 });
 
 $app->group('/productopedidos', function (RouteCollectorProxy $group) {
@@ -66,8 +68,8 @@ $app->group('/productopedidos', function (RouteCollectorProxy $group) {
     $group->get('/listar', \ProductoPedidoController::class . ':ListadoProductosPorSector');
     $group->get('/sector', \ProductoPedidoController::class . ':TraerSectorProducto')->add(new LoggerMW());
     $group->post('[/]', \ProductoPedidoController::class . ':AltaProductoPedido');
-    $group->post('/realizar', \ProductoPedidoController::class . ':EmpleadoTomaProducto')->add(new LoggerMW())
-        ->add(\AuthProductos::class . ':ValidarRol');
+    $group->post('/realizar', \ProductoPedidoController::class . ':EmpleadoTomaProducto')->add(\AuthProductos::class . ':ValidarRol')
+        ->add(new LoggerMW());
     $group->post('/servir', \ProductoPedidoController::class . ':ListoParaServir');
 });
 
@@ -100,9 +102,15 @@ $app->group('/encuestas', function (RouteCollectorProxy $group) {
     $group->post('[/]', \EncuestaController::class . ':AltaEncuesta');
 });
 
+$app->group('/estadisticas', function (RouteCollectorProxy $group) {
+    $group->get('/promedio', \PedidoController::class . ':PromedioIngresos30Dias');
+});
+
 $app->group('/csv', function (RouteCollectorProxy $group) {
     $group->get('/guardar/empleados', \EmpleadoController::class . ':GuardarEmpleados');
     $group->get('/cargar/empleados', \EmpleadoController::class . ':CargarEmpleados');
+    $group->get('/guardar/productos', \ProductoController::class . ':GuardarProductos');
+    $group->get('/cargar/productos', \ProductoController::class . ':CargarProductos');
 });
 
 $app->run();

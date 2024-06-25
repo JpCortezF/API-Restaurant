@@ -14,6 +14,8 @@ class LoggerMW
         $token = trim(explode("Bearer", $header)[1]);
         try {
             AutentificadorJWT::VerificarToken($token);
+            $payload = AutentificadorJWT::ObtenerData($token);
+            $request = $request->withAttribute('empleado', $payload);
             $response = $handler->handle($request);
         } catch (Exception $e) {
             $response = new Response();

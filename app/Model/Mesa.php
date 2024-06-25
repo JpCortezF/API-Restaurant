@@ -37,8 +37,8 @@ class Mesa
             $consulta = $objAccesoDatos->prepararConsulta("SELECT * from mesas WHERE id_mesa = :id_mesa");
             $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_INT);
             $consulta->execute();
-            $empleado = $consulta->fetch(PDO::FETCH_ASSOC);
-            return $empleado;
+            $mesa = $consulta->fetch(PDO::FETCH_ASSOC);
+            return $mesa;
         } catch (Exception $e) {
             throw new Exception("Error al traer la mesa: " . $e->getMessage());
         }
@@ -66,7 +66,7 @@ class Mesa
     public static function EliminarMesa($id_mesa)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("UPDATE mesas SET activo = 'Fuera de servicio' WHERE id_mesa = :id_mesa");
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE mesas SET estado = 'Fuera de servicio' WHERE id_mesa = :id_mesa");
         $consulta->bindValue(':id_mesa', $id_mesa, PDO::PARAM_INT);
         return $consulta->execute();
     }
