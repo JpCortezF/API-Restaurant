@@ -108,10 +108,19 @@ class ProductoController implements IApiUsable
         }
 
         fclose($archivo);
-        $retorno = json_encode(array("mensaje" => "Productos guardados en CSV con exito"));
 
-        $response->getBody()->write($retorno);
-        return $response;
+        // Configuración para descargar el archivo
+        $response = $response->withHeader('Content-Description', 'File Transfer')
+            ->withHeader('Content-Type', 'application/octet-stream')
+            ->withHeader('Content-Disposition', 'attachment;filename="' . basename($path) . '"')
+            ->withHeader('Expires', '0')
+            ->withHeader('Cache-Control', 'must-revalidate')
+            ->withHeader('Pragma', 'public')
+            ->withHeader('Content-Length', filesize($path));
+
+        readfile($path);
+
+        return $response->withStatus(200);
     }
     public static function CargarProductos($request, $response, $args)
     {

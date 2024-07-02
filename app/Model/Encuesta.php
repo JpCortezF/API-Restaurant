@@ -8,7 +8,7 @@ class Encuesta
     public $puntuacion_mesa;
     public $puntuacion_mozo;
     public $puntuacion_cocinero;
-    public $puntuacion_restaurant;
+    public $puntuacion_restaurante;
     public $comentario;
 
     public static function CrearEncuesta($encuesta)
@@ -23,7 +23,7 @@ class Encuesta
         $consulta->bindValue(':puntuacion_mesa', $encuesta->puntuacion_mesa);
         $consulta->bindValue(':puntuacion_mozo', $encuesta->puntuacion_mozo);
         $consulta->bindValue(':puntuacion_cocinero', $encuesta->puntuacion_cocinero);
-        $consulta->bindValue(':puntuacion_restaurante', $encuesta->puntuacion_restaurant);
+        $consulta->bindValue(':puntuacion_restaurante', $encuesta->puntuacion_restaurante);
         $consulta->bindValue(':comentario', $encuesta->comentario);
         $consulta->execute();
     }
@@ -50,7 +50,15 @@ class Encuesta
     public static function TraerMejoresComentarios()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM encuestas ORDER BY puntuacion_restaurant DESC");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM encuestas ORDER BY puntuacion_restaurante DESC");
+        $consulta->execute();
+
+        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Encuesta');
+    }
+    public static function TraerPeoresComentarios()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM encuestas ORDER BY puntuacion_restaurante");
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Encuesta');

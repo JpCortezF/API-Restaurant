@@ -10,7 +10,6 @@ class EncuestaController
         if (isset(
             $p['id_mesa'],
             $p['id_pedido'],
-            $p['nombre_cliente'],
             $p['puntuacion_mesa'],
             $p['puntuacion_mozo'],
             $p['puntuacion_cocinero'],
@@ -20,11 +19,11 @@ class EncuestaController
             $encuesta = new Encuesta();
             $encuesta->id_mesa = $p['id_mesa'];
             $encuesta->id_pedido = $p['id_pedido'];
-            $encuesta->nombre_cliente = $p['nombre_cliente'];
+            $encuesta->nombre_cliente = Pedido::ObtenerNombreCliente($encuesta->id_pedido);
             $encuesta->puntuacion_mesa = $p['puntuacion_mesa'];
             $encuesta->puntuacion_mozo = $p['puntuacion_mozo'];
             $encuesta->puntuacion_cocinero = $p['puntuacion_cocinero'];
-            $encuesta->puntuacion_restaurant = $p['puntuacion_restaurante'];
+            $encuesta->puntuacion_restaurante = $p['puntuacion_restaurante'];
             $encuesta->comentario = $p['comentario'];
 
             Encuesta::CrearEncuesta($encuesta);
@@ -64,8 +63,16 @@ class EncuestaController
     public function TraerMejoresComentarios($request, $response, $args)
     {
         $lista = Encuesta::TraerMejoresComentarios();
+        $payload = json_encode(array("Reseñas" => $lista));
 
-        $payload = json_encode($lista);
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
+    public function TraerPeoresComentarios($request, $response, $args)
+    {
+        $lista = Encuesta::TraerPeoresComentarios();
+        $payload = json_encode(array("Reseñas" => $lista));
 
         $response->getBody()->write($payload);
         return $response

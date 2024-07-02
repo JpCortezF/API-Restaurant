@@ -6,39 +6,6 @@ require_once './Model/Pedido.php';
 
 class ProductoPedidoController
 {
-    public function AltaProductoPedido($request, $response, $args)
-    {
-        $parametros = $request->getParsedBody();
-        $id_producto = $parametros['id_producto'];
-        $id_pedido =  $parametros['id_pedido'];
-        $cantidad =  $parametros['cantidad'];
-        $tiempo_estimado =  $parametros['tiempo_estimado'];
-        $producto = Producto::ObtenerProducto($id_producto);
-        $pedido = Pedido::TraerPedido($id_pedido);
-        if ($pedido && $producto) {
-            if ($pedido->estado_pedido == 'Pendiente') {
-                $productoPedido = new ProductoPedido();
-                $productoPedido->id_pedido = $id_pedido;
-                $productoPedido->id_producto = $id_producto;
-                $productoPedido->cantidad = $cantidad;
-                $productoPedido->estado = "Pendiente";
-                $productoPedido->tiempo_estimado = $tiempo_estimado;
-
-                // Pedido::ObtenerPrecioFinal($id_pedido, $producto->precio);
-
-                $productoPedido->CrearProductoPedido();
-                $payload = json_encode(array("mensaje" => "ProductoPedido creado con exito."));
-            } else {
-                $payload = json_encode(array("error" => "El numero de pedido no se encuentra 'Pendiente'."));
-            }
-        } else {
-            $payload = json_encode(array("error" => "No se pudo crear el ProductoPedido."));
-        }
-
-        $response->getBody()->write($payload);
-        return $response->withHeader('Content-Type', 'application/json');
-    }
-
     public function ObtenerProductoPedidos($request, $response, $args)
     {
         $lista = ProductoPedido::TraerProductoPedidos();
@@ -52,39 +19,30 @@ class ProductoPedidoController
 
     public static function ListadoProductosPorSector($request, $response, $args)
     {
-        $parametros = $request->getQueryParams();
-        $id_empleado = $parametros['id_empleado'];
+        try {
+            $id_empleado = AuthEmpleados::ObtenerIdEmpleadoDelToken($request);
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+
         $empleado = Empleado::EmpleadoPorID($id_empleado);
+        $id_rol = $empleado->id_rol;
 
-        if ($empleado) {
-            $id_producto = ProductoPedido::PedidoProductoPorIdEmpleado($id_empleado);
-            if ($id_producto) {
-                $id_sector = Producto::ObtenerSectorPorIdProducto($id_producto);
-                if ($id_sector) {
-                    $sectorEmpleado = $empleado->id_rol;
+        $sectorMapping = [
+            2 => [1],        // Bartender => Barra de tragos y vinos
+            3 => [2],        // Cervecero => Barra de choperas   
+            4 => [3, 4],     // Cocinero => Cocina, Candy Bar
+        ];
 
-                    $sectorMapping = [
-                        2 => [1],           // Bartender => Barra de tragos y vinos
-                        3 => [2],           // Cervecero => Barra de choperas
-                        4 => [3, 4],        // Cocinero => Cocina, Candy Bar
-                    ];
+        if (isset($sectorMapping[$id_rol])) {
+            $sectores = $sectorMapping[$id_rol];
+            $productosPendientes = ProductoPedido::PedidoProductoPendientesPorSectores($sectores);
 
-                    if (isset($sectorMapping[$sectorEmpleado])) {
-                        $sectores = $sectorMapping[$sectorEmpleado];
-                        $pedidos = Pedido::ObtenerPedidosPorSectorYPendiente($sectores);
-
-                        $payload = json_encode(array("pedidos" => $pedidos));
-                    } else {
-                        $payload = json_encode(array("error" => "El rol del empleado no tiene sectores asignados."));
-                    }
-                } else {
-                    $payload = json_encode(array("error" => "No se pudo determinar el sector del producto."));
-                }
-            } else {
-                $payload = json_encode(array("error" => "No se pudo encontrar un producto asociado al empleado."));
-            }
+            $payload = json_encode(array("productosPendientes" => $productosPendientes));
         } else {
-            $payload = json_encode(array("error" => "No se pudo encontrar el empleado."));
+            $payload = json_encode(array("error" => "El rol del empleado no tiene sectores asignados."));
         }
 
         $response->getBody()->write($payload);
@@ -111,23 +69,56 @@ class ProductoPedidoController
         return $response->withHeader('Content-Type', 'application/json');
     }
 
+    public function ProductoMasVendido($request, $response, $args)
+    {
+        $mas_vendido = ProductoPedido::ProductoMasVendido();
+        $payload = json_encode(array('Producto mas vendido' => $mas_vendido));
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+    public function ProductoMenosVendido($request, $response, $args)
+    {
+        $menos_vendido = ProductoPedido::ProductoMenosVendido();
+        $payload = json_encode(array('Producto menos vendido' => $menos_vendido));
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
     public function EmpleadoTomaProducto($request, $response, $args)
     {
         $params = $request->getParsedBody();
         $id = $params['id'];
         $estado = $params['estado'];
-        $tiempo_estimado = $params['tiempo_estimado'];
+
+        try {
+            $id_empleado = AuthEmpleados::ObtenerIdEmpleadoDelToken($request);
+        } catch (Exception $e) {
+            $payload = json_encode(array("error" => $e->getMessage()));
+            $response->getBody()->write($payload);
+            return $response->withHeader('Content-Type', 'application/json');
+        }
 
         $productopedido = ProductoPedido::TraerPorId($id);
-
         if ($productopedido === false) {
-            $payload = json_encode(array("error" => "No se pudo encontrar el producto pedido."));
+            $payload = json_encode(array("mensaje" => "No se pudo encontrar el producto pedido."));
         } else {
-            if (ProductoPedido::ActualizarEstadoYTiempo($id, $estado, $tiempo_estimado)) {
-                Pedido::ActualizarEstadoPedido($productopedido->id_pedido, 'En Preparacion');
-                $payload = json_encode(array("mensaje" => "Se han modificado el Estado y el Tiempo Estimado del Producto"));
+            if ($productopedido->estado == 'Pendiente') {
+                $empleado_con_productos = ProductoPedido::EmpleadoConProductos($id_empleado, 'En Preparacion');
+                if (count($empleado_con_productos) >= 3) {
+                    $payload = json_encode(array("mensaje" => "No puede tomar más de 3 productos a la vez."));
+                } else {
+                    if (ProductoPedido::ActualizarEstadoProducto($id, $estado)) {
+                        ProductoPedido::SetEmpleadoProducto($id, $id_empleado);
+                        Pedido::ActualizarEstadoPedido($productopedido->id_pedido, 'En Preparacion');
+                        $payload = json_encode(array("mensaje" => "Se ha modificado el estado del producto."));
+                    } else {
+                        $payload = json_encode(array("mensaje" => "No se modificó nada."));
+                    }
+                }
             } else {
-                $payload = json_encode(array("mensaje" => "No se modifico nada"));
+                $payload = json_encode(array("mensaje" => "El producto ya fue tomado por un empleado."));
             }
         }
 
@@ -138,19 +129,34 @@ class ProductoPedidoController
     public function ListoParaServir($request, $response, $args)
     {
         $params = $request->getParsedBody();
-        $id_pedido = $params['id_pedido'];
+        $id = $params['id'];
 
-        $pedido = Pedido::TraerPedido($id_pedido);
-        if ($pedido) {
-            if (ProductoPedido::ActualizarEstadoPorPedido($id_pedido, 'Listo para servir')) {
-
-                Pedido::ActualizarEstadoPedido($id_pedido, 'Listo para servir');
-                $payload = json_encode(array("mensaje" => "Todos los productos del pedido están listos para servir"));
-            } else {
-                $payload = json_encode(array("error" => "No se pudo actualizar el estado de los productos del pedido"));
-            }
+        $productopedido = ProductoPedido::TraerPorId($id);
+        if ($productopedido === false) {
+            $payload = json_encode(array("mensaje" => "No se pudo encontrar el producto pedido."));
         } else {
-            $payload = json_encode(array("error" => "No se encontró el pedido"));
+            if ($productopedido->estado == 'En Preparacion') {
+                ProductoPedido::ActualizarEstadoPorId($productopedido->id, 'Listo para servir');
+
+                $productosPedido = ProductoPedido::TraerPorIdPedido($productopedido->id_pedido);
+                $todosListos = true;
+
+                foreach ($productosPedido as $producto) {
+                    if ($producto->estado != 'Listo para servir') {
+                        $todosListos = false;
+                        break;
+                    }
+                }
+
+                if ($todosListos) {
+                    Pedido::ActualizarEstadoPedido($productopedido->id_pedido, 'Listo para servir');
+                    $payload = json_encode(array("mensaje" => "Todos los productos del pedido están listos para servir"));
+                } else {
+                    $payload = json_encode(array("mensaje" => "Producto marcado como listo para servir"));
+                }
+            } else {
+                $payload = json_encode(array("mensaje" => "Primero deberia pereparar el producto"));
+            }
         }
 
         $response->getBody()->write($payload);

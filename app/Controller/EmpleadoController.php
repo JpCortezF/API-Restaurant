@@ -133,10 +133,18 @@ class EmpleadoController implements IApiUsable
         }
 
         fclose($archivo);
-        $retorno = json_encode(array("mensaje" => "Empleados guardados en CSV con exito"));
+        // Configuración para descargar el archivo
+        $response = $response->withHeader('Content-Description', 'File Transfer')
+            ->withHeader('Content-Type', 'application/octet-stream')
+            ->withHeader('Content-Disposition', 'attachment;filename="' . basename($path) . '"')
+            ->withHeader('Expires', '0')
+            ->withHeader('Cache-Control', 'must-revalidate')
+            ->withHeader('Pragma', 'public')
+            ->withHeader('Content-Length', filesize($path));
 
-        $response->getBody()->write($retorno);
-        return $response;
+        readfile($path);
+
+        return $response->withStatus(200);
     }
 
     public static function CargarEmpleados($request, $response, $args)
@@ -179,5 +187,14 @@ class EmpleadoController implements IApiUsable
         $retorno = json_encode(array("mensaje" => "Empleados guardados en la base de datos con exito"));
         $response->getBody()->write($retorno);
         return $response;
+    }
+
+    public function DescargarPDF($request, $response, $args)
+    {
+        Empleado::ExportarPDF();
+        $payload = json_encode(array("mensaje" => "Empleados exportados a pdf con exito"));
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
     }
 }

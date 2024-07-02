@@ -2,38 +2,18 @@
 	"info": {
 		"_postman_id": "76f3ccf1-7fcc-4e95-b91a-01c1c9b98f86",
 		"name": "Tp-Comanda",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "33321682"
 	},
 	"item": [
 		{
-			"name": "Empleados",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "Productos",
-			"request": {
-				"method": "GET",
-				"header": []
-			},
-			"response": []
-		},
-		{
-			"name": "PPedido",
+			"name": "Login",
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTg3MjI0MzksImV4cCI6MTcxODc4MjQzOSwiYXVkIjoiMzk5ZjM2Y2EyYWQxZTk3YjM1YWJhZjhkNjhmOTkxOGZmZjZlMzMxYiIsImRhdGEiOnsiaWRfZW1wbGVhZG8iOjEwLCJpZF9yb2wiOjV9LCJhcHAiOiJMYUNvbWFuZGEifQ.1KJod_YqFVa-b3V4mRCry9RdPWmwTg5moqin-osSngE",
-							"type": "string"
-						}
-					]
+					"bearer": {
+						"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTg3MjI0MzksImV4cCI6MTcxODc4MjQzOSwiYXVkIjoiMzk5ZjM2Y2EyYWQxZTk3YjM1YWJhZjhkNjhmOTkxOGZmZjZlMzMxYiIsImRhdGEiOnsiaWRfZW1wbGVhZG8iOjEwLCJpZF9yb2wiOjV9LCJhcHAiOiJMYUNvbWFuZGEifQ.1KJod_YqFVa-b3V4mRCry9RdPWmwTg5moqin-osSngE"
+					}
 				},
 				"method": "POST",
 				"header": [],
@@ -41,44 +21,33 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "id_empleado",
-							"value": "1",
+							"key": "usuario",
+							"value": "martinez",
 							"type": "text"
 						},
 						{
-							"key": "id_producto",
-							"value": "4",
-							"type": "text"
-						},
-						{
-							"key": "id",
-							"value": "3",
-							"type": "text"
-						},
-						{
-							"key": "estado",
-							"value": "En Preparacion",
-							"type": "text"
-						},
-						{
-							"key": "tiempo_estimado",
-							"value": "",
+							"key": "clave",
+							"value": "martinez",
 							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/productopedidos/realizar",
-					"protocol": "http",
+					"raw": "localhost:666/auth/login",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
-						"productopedidos",
-						"realizar"
+						"auth",
+						"login"
 					],
 					"query": [
+						{
+							"key": "",
+							"value": "",
+							"disabled": true
+						},
 						{
 							"key": "",
 							"value": "",
@@ -92,8 +61,180 @@
 		{
 			"name": "Pedidos",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTkxNjA0MTMsImV4cCI6MTcxOTIyMDQxMywiYXVkIjoiMzk5ZjM2Y2EyYWQxZTk3YjM1YWJhZjhkNjhmOTkxOGZmZjZlMzMxYiIsImRhdGEiOnsiaWRfZW1wbGVhZG8iOjEwLCJub21icmUiOiJFbnpvIiwiaWRfcm9sIjo1fSwiYXBwIjoiTGFDb21hbmRhIn0.FKhrN6Q6nAf5d74ODXY3mWWN-qFtLQCYAgqA0GmuKuU"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_mozo",
+							"value": "14",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "nombre_cliente",
+							"value": "Bhavi",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id_mesa",
+							"value": "1",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "tiempo_estimado",
+							"value": "15",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "foto_mesa",
+							"type": "file",
+							"src": "/C:/Users/Equipo/Desktop/Jpcortez/Photos/img_programacion/github4.jpg",
+							"disabled": true
+						},
+						{
+							"key": "id_pedido",
+							"value": "5",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:666/pedidos/detalle?rol=mozo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"pedidos",
+						"detalle"
+					],
+					"query": [
+						{
+							"key": "rol",
+							"value": "mozo"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PedidoFoto",
+			"request": {
 				"method": "GET",
 				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Listar pedidos por Empleado",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "PPedidoRealizar",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Cliente obtiene tiempo",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Socio obtiene tiempo",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "PPedido Servir",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTkzMjkyNDAsImV4cCI6MTcxOTM4OTI0MCwiYXVkIjoiMzk5ZjM2Y2EyYWQxZTk3YjM1YWJhZjhkNjhmOTkxOGZmZjZlMzMxYiIsImRhdGEiOnsiaWRfZW1wbGVhZG8iOjE1LCJub21icmUiOiJEYXZpZCIsImlkX3JvbCI6NH0sImFwcCI6IkxhQ29tYW5kYSJ9.w-FCTpUdw21VwEs8o0AMgDxH6ecliSbyK6hvJICLmkM"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_producto",
+							"value": "2",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id",
+							"value": "13",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "estado",
+							"value": "En Preparacion",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "tiempo_estimado",
+							"value": "15",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id_pedido",
+							"value": "5",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id_producto",
+							"value": "2",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "cantidad",
+							"value": "1",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "tiempo_estimado",
+							"value": "12",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": "http://localhost:666/productopedidos/servir"
 			},
 			"response": []
 		},
@@ -106,7 +247,7 @@
 			"response": []
 		},
 		{
-			"name": "Login",
+			"name": "Entregar pedido",
 			"request": {
 				"method": "GET",
 				"header": []
@@ -114,15 +255,184 @@
 			"response": []
 		},
 		{
-			"name": "CSV",
+			"name": "Pedido cobrar",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "descripcion",
+							"value": "Daikiri",
+							"type": "text"
+						},
+						{
+							"key": "precio",
+							"value": "1500",
+							"type": "text"
+						},
+						{
+							"key": "id_sector",
+							"value": "1",
+							"type": "text"
+						}
+					]
+				},
+				"url": "http://localhost:666/productos"
 			},
 			"response": []
 		},
 		{
 			"name": "Encuesta",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id_mesa",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "id_pedido",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "nombre_cliente",
+							"value": "Alan",
+							"type": "text"
+						},
+						{
+							"key": "puntuacion_mesa",
+							"value": "8",
+							"type": "text"
+						},
+						{
+							"key": "puntuacion_mozo",
+							"value": "8",
+							"type": "text"
+						},
+						{
+							"key": "puntuacion_cocinero",
+							"value": "9",
+							"type": "text"
+						},
+						{
+							"key": "puntuacion_restaurante",
+							"value": "8",
+							"type": "text"
+						},
+						{
+							"key": "comentario",
+							"value": "Todo muy rico. Y el mozo me atendió muy bien!",
+							"type": "text"
+						}
+					]
+				},
+				"url": "http://localhost:666/encuestas"
+			},
+			"response": []
+		},
+		{
+			"name": "Estadisticas",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": "http://localhost:666/estadisticas/promedio"
+			},
+			"response": []
+		},
+		{
+			"name": "PDF y CSV",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Empleados",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTkzMjQ2NDMsImV4cCI6MTcxOTM4NDY0MywiYXVkIjoiMzk5ZjM2Y2EyYWQxZTk3YjM1YWJhZjhkNjhmOTkxOGZmZjZlMzMxYiIsImRhdGEiOnsiaWRfZW1wbGVhZG8iOjEwLCJub21icmUiOiJFbnpvIiwiaWRfcm9sIjo1fSwiYXBwIjoiTGFDb21hbmRhIn0.T3Nt3CyjJvn15Nec37Qpe8XFklmPMLNQ4a2_uXF_zsg"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "nombre",
+							"value": "David",
+							"type": "text"
+						},
+						{
+							"key": "usuario",
+							"value": "martinez",
+							"type": "text"
+						},
+						{
+							"key": "clave",
+							"value": "martinez",
+							"type": "text"
+						},
+						{
+							"key": "id_rol",
+							"value": "4",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:666/empleados?rol=socio",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"empleados"
+					],
+					"query": [
+						{
+							"key": "rol",
+							"value": "socio"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Factura mesas",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Factura Pedidos",
 			"request": {
 				"method": "GET",
 				"header": []

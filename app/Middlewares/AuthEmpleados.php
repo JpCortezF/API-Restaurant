@@ -21,4 +21,19 @@ class AuthEmpleados
         }
         return $response;
     }
+    public static function ObtenerIdEmpleadoDelToken($request)
+    {
+        $header = $request->getHeader('Authorization');
+        if (empty($header)) {
+            throw new Exception('Token no proporcionado');
+        }
+
+        $token = str_replace('Bearer ', '', $header[0]);
+        try {
+            $datos = AutentificadorJWT::ObtenerData($token);
+            return $datos->id_empleado;
+        } catch (Exception $e) {
+            throw new Exception('Token inválido');
+        }
+    }
 }

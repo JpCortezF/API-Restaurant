@@ -73,12 +73,50 @@ class Mesa
     public static function TraerMasUsada()
     {
         $objetoAccesoDato = AccesoDatos::obtenerInstancia();
-        $consulta = $objetoAccesoDato->prepararConsulta('SELECT m.*, COUNT(p.id_mesa) as cantidad 
+        $consulta = $objetoAccesoDato->prepararConsulta("SELECT m.*, COUNT(p.id_mesa) as cantidad 
         FROM mesas m
         INNER JOIN pedidos p ON m.id_mesa = p.id_mesa
         GROUP BY p.id_mesa
-        ORDER BY cantidad DESC LIMIT 1');
+        ORDER BY cantidad DESC LIMIT 1");
         $consulta->execute();
         return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+    public static function TraerMenosUsada()
+    {
+        $objetoAccesoDato = AccesoDatos::obtenerInstancia();
+        $consulta = $objetoAccesoDato->prepararConsulta("SELECT m.*, COUNT(p.id_mesa) as cantidad 
+        FROM mesas m
+        INNER JOIN pedidos p ON m.id_mesa = p.id_mesa
+        GROUP BY p.id_mesa
+        ORDER BY cantidad LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function MesaMasFacturo()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT m.id_mesa, m.codigo, SUM(pr.precio * pp.cantidad) AS total_facturado
+        FROM mesas m
+        INNER JOIN pedidos p ON m.id_mesa = p.id_mesa
+        INNER JOIN productopedidos pp ON p.id_pedido = pp.id_pedido
+        INNER JOIN productos pr ON pp.id_producto = pr.id_producto
+        GROUP BY m.id_mesa
+        ORDER BY total_facturado DESC LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_OBJ);
+    }
+    public static function MesaMenosFacturo()
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT m.id_mesa, m.codigo, SUM(pr.precio * pp.cantidad) AS total_facturado
+        FROM mesas m
+        INNER JOIN pedidos p ON m.id_mesa = p.id_mesa
+        INNER JOIN productopedidos pp ON p.id_pedido = pp.id_pedido
+        INNER JOIN productos pr ON pp.id_producto = pr.id_producto
+        GROUP BY m.id_mesa
+        ORDER BY total_facturado LIMIT 1");
+        $consulta->execute();
+        return $consulta->fetch(PDO::FETCH_OBJ);
     }
 }

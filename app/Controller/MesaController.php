@@ -91,15 +91,32 @@ class MesaController implements IApiUsable
                 break;
         }
     }
-
+    public function LimpiarMesa($request, $response, $args)
+    {
+        $parametros = $request->getParsedBody();
+        $id_mesa = $parametros['id_mesa'];
+        $mesa = Mesa::TraerMesa($id_mesa);
+        if ($mesa) {
+            if ($mesa['estado'] == "Con cliente pagando") {
+                Mesa::ActualizarEstadoMesa($id_mesa, "Sin clientes");
+                $payload = json_encode(array("mensaje" => "Mesa disponible nuevamente"));
+            } else {
+                $payload = json_encode(array("error" => "Ocurrio un error"));
+            }
+        } else {
+            $payload = json_encode(array("error" => "No se encontro la mesa"));
+        }
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
     public function CerrarMesa($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
         $id_mesa = $parametros['id_mesa'];
         $mesa = Mesa::TraerMesa($id_mesa);
         if ($mesa) {
-            // $mesa->estado = "Sin clientes";
-            Mesa::ActualizarEstadoMesa($id_mesa, "Sin clientes");
+            // $mesa['estado'] = "Sin clientes";
+            Mesa::ActualizarEstadoMesa($id_mesa, "Cerrada");
             $payload = json_encode(array("mensaje" => "Mesa cerrada con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Error en cerrar Mesa"));
@@ -117,6 +134,35 @@ class MesaController implements IApiUsable
             $payload = json_encode(array("mesa" => $resultado['id_mesa'], "cantidad" => $resultado['cantidad']));
         }
 
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public static function TraerMenosUsada($request, $response, $args)
+    {
+        $resultado = Mesa::TraerMenosUsada();
+        if ($resultado == false) {
+            $payload = json_encode(array("mensaje" => "No se encontró la mesa"));
+        } else {
+            $payload = json_encode(array("mesa" => $resultado['id_mesa'], "cantidad" => $resultado['cantidad']));
+        }
+
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ObtenerMesaMasFacturo($request, $response, $args)
+    {
+        $mesa = Mesa::MesaMasFacturo();
+        $payload = json_encode(array("mensaje" => "Mesa que más facturó", "mesa" => $mesa));
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ObtenerMesaMenosFacturo($request, $response, $args)
+    {
+        $mesa = Mesa::MesaMenosFacturo();
+        $payload = json_encode(array("mensaje" => "Mesa que menos facturó", "mesa" => $mesa));
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }

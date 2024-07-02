@@ -15,19 +15,17 @@ class Pedido
     public function NuevoPedido()
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO pedidos (id_mozo,codigo,nombre_cliente,id_mesa,estado,tiempo_estimado,foto_mesa,fecha_inicio,fecha_cierre)
-        VALUES (:id_mozo,:codigo,:nombre_cliente,:id_mesa,:estado,:tiempo_estimado,:foto_mesa,:fecha_inicio,:fecha_cierre)");
+        $consulta = $objAccesoDatos->prepararConsulta("INSERT INTO pedidos (id_mozo,codigo,nombre_cliente,id_mesa,estado,foto_mesa,fecha_inicio,fecha_cierre)
+        VALUES (:id_mozo,:codigo,:nombre_cliente,:id_mesa,:estado,:foto_mesa,:fecha_inicio,:fecha_cierre)");
         $fecha = new DateTime(date('Y-m-d H:i:s'));
         $consulta->bindValue(':id_mozo', $this->id_mozo, PDO::PARAM_INT);
         $consulta->bindValue(':codigo', $this->codigo, PDO::PARAM_STR);
         $consulta->bindValue(':nombre_cliente', $this->nombre_cliente, PDO::PARAM_STR);
         $consulta->bindValue(':id_mesa', $this->id_mesa, PDO::PARAM_INT);
         $consulta->bindValue(':estado', "Pendiente", PDO::PARAM_STR);
-        $consulta->bindValue(':tiempo_estimado', $this->tiempo_estimado, PDO::PARAM_INT);
         $consulta->bindValue(':foto_mesa', $this->foto_mesa, PDO::PARAM_STR);
         $consulta->bindValue(':fecha_inicio', date_format($fecha, 'Y-m-d H:i:s'), PDO::PARAM_STR);
         $consulta->bindValue(':fecha_cierre', null, PDO::PARAM_STR);
-
         $consulta->execute();
 
         return $objAccesoDatos->obtenerUltimoId();
@@ -64,7 +62,7 @@ class Pedido
             throw new Exception("Error al traer el pedido: " . $e->getMessage());
         }
     }
-    public static function ObtenerTodosFinalizados($estado)
+    public static function ObtenerPedidoSegunEstado($estado)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
         $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM pedidos WHERE estado = :estado");
@@ -72,7 +70,15 @@ class Pedido
         $consulta->execute();
         return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
     }
-
+    public static function ObtenerListosParaServir($id_pedido, $estado)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM pedidos WHERE estado = :estado AND id_pedido = :id_pedido");
+        $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+        $consulta->bindValue(':estado', $estado, PDO::PARAM_STR);
+        $consulta->execute();
+        return $consulta->fetchObject('Pedido');
+    }
     public static function EliminarPedido($id_pedido)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
@@ -99,13 +105,22 @@ class Pedido
             mkdir($ruta, 0777, true); // Create the directory with appropriate permissions
         }
 
-        $destino = $ruta . DIRECTORY_SEPARATOR . $id_mesa . "-" . $nombre_cliente . ".jpg";
+        $destino = $ruta . $id_mesa . "-" . $nombre_cliente . ".jpg";
         // Move the uploaded file to the destination
         if (move_uploaded_file($urlImagen["tmp_name"], $destino)) {
             return $destino;
         } else {
             throw new Exception("Error al mover la imagen.");
         }
+    }
+
+    public static function AgregarFotoPedido($id_pedido, $foto_mesa)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE pedidos SET foto_mesa = :foto_mesa WHERE id_pedido = :id_pedido");
+        $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+        $consulta->bindValue(':foto_mesa', $foto_mesa, PDO::PARAM_STR);
+        return $consulta->execute();
     }
 
     public static function ActualizarEstadoPedido($id_pedido, $estado)
@@ -131,25 +146,13 @@ class Pedido
 
         return $consulta->execute();
     }
-
-    public static function ObtenerPedidosPorSectorYPendiente($sectores)
+    public static function ActualizarEstadoYTiempo($id_pedido, $tiempo_estimado)
     {
-        $objetoAccesoDato = AccesoDatos::obtenerInstancia();
-        $sectoresPlaceholder = implode(',', array_fill(0, count($sectores), '?'));
-        var_dump($sectoresPlaceholder);
-        $consulta = $objetoAccesoDato->prepararConsulta("SELECT p.*
-        FROM pedidos p
-        INNER JOIN productopedidos pp ON p.id_pedido = pp.id_pedido
-        INNER JOIN productos prod ON pp.id_producto = prod.id_producto
-        INNER JOIN sectores s ON prod.id_sector = s.id_sector
-        WHERE p.estado = 'Pendiente' AND s.id_sector IN ($sectoresPlaceholder)");
-
-        foreach ($sectores as $index => $sector) {
-            $consulta->bindValue($index + 1, $sector, PDO::PARAM_INT);
-        }
-
-        $consulta->execute();
-        return $consulta->fetchAll(PDO::FETCH_OBJ);
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("UPDATE pedidos SET tiempo_estimado = :tiempo_estimado WHERE id_pedido = :id_pedido");
+        $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+        $consulta->bindValue(':tiempo_estimado', $tiempo_estimado, PDO::PARAM_STR);
+        return $consulta->execute();
     }
 
     public static function ObtenerPrecioFinal($id_pedido)
@@ -180,5 +183,24 @@ class Pedido
         $consulta->execute();
 
         return $consulta->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public static function ObtenerNombreCliente($id_pedido)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT nombre_cliente FROM pedidos WHERE id_pedido = :id_pedido LIMIT 1");
+        $consulta->bindValue(':id_pedido', $id_pedido, PDO::PARAM_INT);
+        $consulta->execute();
+        return $consulta->fetchColumn();
+    }
+
+    public static function PedidosEntreFechas($fecha_desde, $fecha_hasta)
+    {
+        $objAccesoDatos = AccesoDatos::obtenerInstancia();
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM pedidos WHERE fecha_inicio BETWEEN :fecha_desde AND :fecha_hasta");
+        $consulta->bindValue(':fecha_desde', $fecha_desde, PDO::PARAM_STR);
+        $consulta->bindValue(':fecha_hasta', $fecha_hasta, PDO::PARAM_STR);
+        $consulta->execute();
+        return $consulta->fetchAll(PDO::FETCH_CLASS, 'Pedido');
     }
 }

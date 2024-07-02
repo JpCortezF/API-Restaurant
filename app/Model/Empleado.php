@@ -1,4 +1,5 @@
 <?php
+require_once("./utilities/CrearPDF.php");
 class Empleado
 {
     public $id_empleado;
@@ -28,8 +29,8 @@ class Empleado
         try {
             $objAccesoDatos = AccesoDatos::obtenerInstancia();
             $consulta = $objAccesoDatos->prepararConsulta("SELECT e.id_empleado, e.nombre, e.usuario, e.clave, e.id_rol, r.nombre AS rol, e.estado, e.fecha_baja
-                FROM empleados e
-                INNER JOIN roles r ON e.id_rol = r.id_rol");
+            FROM empleados e
+            INNER JOIN roles r ON e.id_rol = r.id_rol");
             $consulta->execute();
             $empleados = $consulta->fetchAll(PDO::FETCH_OBJ);
             return $empleados;
@@ -102,11 +103,28 @@ class Empleado
     public static function EsMozo($id_empleadoMozo)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id_empleado, usuario, nombre, id_rol
-        FROM empleados WHERE id_empleado = :id_empleado AND id_rol = 1");
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT * FROM empleados WHERE id_empleado = :id_empleado AND id_rol = 1");
         $consulta->bindValue(':id_empleado', $id_empleadoMozo, PDO::PARAM_INT);
         $consulta->execute();
 
         return $consulta->fetchObject('Empleado');
+    }
+
+    public static function ExportarPDF($path = "./empleados.pdf")
+    {
+        $pdf = new PDF();
+        $pdf->AddPage();
+
+        $empleados = Empleado::TraerEmpleados();
+
+        // Agregar objetos al PDF
+        foreach ($empleados as $empleado) {
+            $pdf->ChapterTitle($empleado->id_empleado);
+            $pdf->ChapterBody("Nombre: " . $empleado->nombre);
+            $pdf->ChapterBody("Rol: " . $empleado->rol);
+            $pdf->Ln();
+        }
+
+        $pdf->Output($path, 'F');
     }
 }
